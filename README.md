@@ -1,6 +1,6 @@
-# 🚀 DevSwarm — Hybrid Software Engineering Swarm
+# 🚀 DevSwarm — Autonomous Software Engineering Swarm
 
-An autonomous AI engineering swarm designed for Apple Silicon (macOS Metal GPU): **Cloud-capable specialist roles** (Product Manager, Software Architect, QA Test Engineer, Reviewer, Debugger) paired with **100% LOCAL coding agents** running on Ollama with Docker sandbox isolation.
+An autonomous multi-agent software engineering swarm supporting **cross-platform environments (macOS, Linux, and Windows WSL2)**: orchestrates role-specialized agents (Product Manager, Software Architect, QA Test Engineer, Backend/Frontend Coders, and Senior Reviewer) across **Cloud LLMs** (SiliconFlow, DeepSeek, OpenAI, Anthropic) and **Local Models** (Ollama) with isolated Git worktree execution and deterministic quality gates.
 
 ---
 
@@ -96,11 +96,14 @@ An autonomous AI engineering swarm designed for Apple Silicon (macOS Metal GPU):
 
 ## ⚡ Quick Start
 
-### 1. Requirements
-- macOS on Apple Silicon (arm64, 16 GB unified memory profile or higher).
-- Python 3.11+.
-- [Ollama](https://ollama.ai) installed with Metal GPU acceleration.
-- Docker (Docker Desktop, Colima, or OrbStack) for sandboxed command execution.
+### 1. Requirements & Platform Compatibility
+- **Operating System**: macOS, Linux (Ubuntu/Debian/Arch/Fedora), or Windows (via WSL2).
+- **Python**: Python 3.11+.
+- **Git**: Installed and available in your `$PATH`.
+- **Inference Options**:
+  - **Cloud Inference (Recommended for best performance)**: SiliconFlow, DeepSeek, OpenAI, or Anthropic API key in `.env`.
+  - **Local Inference (Optional)**: [Ollama](https://ollama.ai) installed with GPU acceleration (NVIDIA CUDA, AMD ROCm, or Apple Metal).
+- **Sandboxing (Optional)**: Docker (Docker Desktop, Colima, or OrbStack) for sandboxed command execution, or `--unsafe-local-exec` for direct host development.
 
 ### 2. Setup
 ```bash
