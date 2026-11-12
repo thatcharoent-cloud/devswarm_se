@@ -22,7 +22,18 @@ def setup_toy_repo_copy(tmp_path: Path) -> Path:
     dest_repo = tmp_path / "toy_repo"
     shutil.copytree(src_repo, dest_repo, ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
 
-    # Ensure clean git state on branch main
+    # Ensure clean git state on branch main (initialize git if not present)
+    if not (dest_repo / ".git").exists():
+        subprocess.run(["git", "init"], cwd=str(dest_repo), check=True, capture_output=True)
+        subprocess.run(["git", "branch", "-M", "main"], cwd=str(dest_repo), check=True, capture_output=True)
+        subprocess.run(["git", "add", "."], cwd=str(dest_repo), check=True, capture_output=True)
+        subprocess.run(
+            ["git", "-c", "user.name=Test", "-c", "user.email=test@test.com", "commit", "-m", "Initial commit"],
+            cwd=str(dest_repo),
+            check=True,
+            capture_output=True,
+        )
+
     subprocess.run(["git", "checkout", "main"], cwd=str(dest_repo), check=True, capture_output=True)
     subprocess.run(["git", "reset", "--hard", "HEAD"], cwd=str(dest_repo), check=True, capture_output=True)
     subprocess.run(["git", "clean", "-fdx"], cwd=str(dest_repo), check=True, capture_output=True)
