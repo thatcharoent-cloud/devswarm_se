@@ -1,0 +1,32 @@
+# config/gates.yaml
+# Deterministic quality gates for task verification before git commit and branch merge.
+
+gates:
+  compile:
+    enabled: true
+    required: true
+    description: "Verify Python syntax and bytecode compilation on modified files"
+    command: "python -m compileall -q {files}"
+    timeout_s: 15.0
+
+  lint:
+    enabled: true
+    required: false
+    description: "Static code style and lint check"
+    command: "python -m ruff check --fix --ignore UP007,E501,BLE001,F841,B007 {files}"
+    timeout_s: 20.0
+
+  test:
+    enabled: true
+    required: true
+    description: "Execute pytest unit tests deterministically"
+    command: "python -m pytest -q -ra --tb=short"
+    timeout_s: 30.0
+
+  security:
+    enabled: true
+    required: true
+    description: "Scan for hardcoded secrets, dangerous functions (eval, exec), and high-risk paths"
+    type: "builtin_security_scan"
+    timeout_s: 15.0
+

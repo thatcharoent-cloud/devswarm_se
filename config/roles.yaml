@@ -1,0 +1,193 @@
+# config/roles.yaml
+# Specialist role specifications for the Hybrid Engineering Swarm.
+# Cloud-capable roles: pm, architect, qa, reviewer.
+# Local coding roles (pinned to local Ollama on Apple Silicon): backend, tester.
+# By default, only backend and tester are enabled for standard task loops.
+
+roles:
+  pm:
+    enabled: false                     # Activated in hybrid spec pipeline
+    description: "Product Manager: turns plain-English goal into spec.md with testable acceptance criteria (AC-1..n) and milestones."
+    provider: "siliconflow"              # Suggested: strongest cloud model or ollama
+    model: "deepseek-ai/DeepSeek-V4.1-Flash-1017"            # e.g. claude-3-7-sonnet or gpt-4o
+    thinking: false
+    max_tokens: 4096
+    budget_usd: 1.00
+    search_enabled: true
+    allowed_content_classes:
+      - "goal"
+      - "spec"
+      - "repo_map"
+      - "user_answers"
+    allowed_tools: ["read_file", "list_dir", "search_docs", "web_search"]
+    default_write_scope: [".swarm/runs/*/artifacts/spec.md"]
+    command_allowlist: []
+    max_turns: 6
+    max_tool_calls: 10
+    token_budget: 20000
+    minutes_budget: 5.0
+
+  architect:
+    enabled: false                     # Activated in hybrid architecture pipeline
+    description: "Software Architect: designs stack, folder structure, interface contract stubs, ADRs, and technical risks."
+    provider: "siliconflow"              # Suggested: strongest cloud model or ollama
+    model: "deepseek-ai/DeepSeek-V4.1-Flash-1017"            # e.g. claude-3-7-sonnet or gpt-4o
+    thinking: false
+    max_tokens: 4096
+    budget_usd: 1.50
+    search_enabled: true
+    allowed_content_classes:
+      - "goal"
+      - "spec"
+      - "repo_map"
+      - "user_answers"
+      - "architecture"
+      - "interface_stubs"
+    allowed_tools: ["read_file", "list_dir", "search_docs", "web_search", "write_file", "edit_file", "run_command"]
+    default_write_scope: [".swarm/runs/*/artifacts/architecture.md", "src/**", "*.py"]
+    command_allowlist: ["python", "python3"]
+    max_turns: 8
+    max_tool_calls: 15
+    token_budget: 25000
+    minutes_budget: 8.0
+
+  qa:
+    enabled: false                     # Activated in test-first & post-implementation pipeline
+    description: "QA Engineer: writes test-first test suites from ACs/contracts (RED-check verified) and conducts post-implementation review."
+    provider: "siliconflow"                 # Suggested: mid-tier cloud model or ollama
+    model: "deepseek-ai/DeepSeek-V4.1-Flash-1017"            # e.g. gpt-4o-mini or claude-3-5-haiku
+    thinking: false
+    max_tokens: 4096
+    budget_usd: 1.00
+    search_enabled: true
+    allowed_content_classes:
+      - "goal"
+      - "spec"
+      - "architecture"
+      - "interface_stubs"
+      - "test_files"
+      - "gate_logs"
+    allowed_tools: ["read_file", "list_dir", "search_docs", "write_file", "edit_file", "run_command"]
+    default_write_scope: ["tests/**", "test_*.py", "*_test.py"]
+    command_allowlist: ["pytest", "python", "python3"]
+    max_turns: 10
+    max_tool_calls: 15
+    token_budget: 25000
+    minutes_budget: 8.0
+
+  backend:
+    enabled: true
+    description: "Backend implementation, business logic, APIs, and data models against contract stubs."
+    provider: "siliconflow"                          # Switched from ollama to siliconflow
+    model: "Qwen/Qwen3-Coder-30B-A3B-Instruct"       # Matches entry in config/providers.yaml
+    thinking: false
+    max_tokens: 4096                                 # Can increase output window (up to 4096+)
+    budget_usd: 1.00                                 # Allocate USD budget ($0.07 / $0.28 per 1M tokens)
+    search_enabled: false
+    allowed_content_classes:
+      - "*"
+    allowed_tools: ["read_file", "list_dir", "search", "write_file", "edit_file", "run_command"]
+    default_write_scope: ["src/**", "app/**", "lib/**", "*.py"]
+    command_allowlist: ["python", "python3", "pytest", "ruff", "black", "mypy"]
+    max_turns: 16
+    max_tool_calls: 25
+    token_budget: 35000
+    minutes_budget: 25.0
+
+  frontend:
+    enabled: false
+    description: "Frontend UI components, styling, and client-side logic."
+    provider: "siliconflow"
+    model: "deepseek-ai/DeepSeek-V4.1-Flash-1017"
+    thinking: false
+    max_tokens: 4096
+    budget_usd: 0.00
+    search_enabled: false
+    allowed_content_classes: ["*"]
+    allowed_tools: ["read_file", "list_dir", "search", "write_file", "edit_file", "run_command"]
+    default_write_scope: ["frontend/**", "ui/**", "src/**/*.tsx", "src/**/*.jsx", "src/**/*.css"]
+    command_allowlist: ["npm", "npx", "node", "yarn", "eslint"]
+    max_turns: 12
+    max_tool_calls: 20
+    token_budget: 25000
+    minutes_budget: 10.0
+
+  tester:
+    enabled: true
+    description: "Cloud test implementation and test runner."
+    provider: "siliconflow"
+    model: "deepseek-ai/DeepSeek-V4.1-Flash-1017"
+    thinking: false
+    max_tokens: 4096
+    budget_usd: 1.00
+    search_enabled: false
+    allowed_content_classes:
+      - "*"
+    allowed_tools: ["read_file", "list_dir", "search", "write_file", "edit_file", "run_command"]
+    default_write_scope: ["tests/**", "test_*.py", "*_test.py"]
+    command_allowlist: ["pytest", "python", "python3"]
+    max_turns: 16
+    max_tool_calls: 25
+    token_budget: 35000
+    minutes_budget: 10.0
+
+  security:
+    enabled: false
+    description: "Static analysis, dependency auditing, vulnerability checks, and security fixes."
+    provider: "siliconflow"
+    model: "deepseek-ai/DeepSeek-V4.1-Flash-1017"
+    thinking: false
+    max_tokens: 4096
+    budget_usd: 0.50
+    search_enabled: false
+    allowed_content_classes: ["*"]
+    allowed_tools: ["read_file", "list_dir", "search", "write_file", "edit_file", "run_command"]
+    default_write_scope: ["src/**", "config/**"]
+    command_allowlist: ["bandit", "semgrep", "pip-audit", "npm audit"]
+    max_turns: 8
+    max_tool_calls: 15
+    token_budget: 15000
+    minutes_budget: 6.0
+
+  devops:
+    enabled: false
+    description: "CI/CD configuration, Dockerfiles, container setups, and environment manifests."
+    provider: "siliconflow"
+    model: "deepseek-ai/DeepSeek-V4.1-Flash-1017"
+    thinking: false
+    max_tokens: 4096
+    budget_usd: 0.50
+    search_enabled: false
+    allowed_content_classes: ["*"]
+    allowed_tools: ["read_file", "list_dir", "search", "write_file", "edit_file", "run_command"]
+    default_write_scope: ["Dockerfile", "docker-compose*.yml", ".github/workflows/**", "Makefile"]
+    command_allowlist: ["docker", "make"]
+    max_turns: 8
+    max_tool_calls: 12
+    token_budget: 15000
+    minutes_budget: 6.0
+
+  reviewer:
+    enabled: false                     # Activated during senior code review
+    description: "Senior Code Reviewer: reviews quality gates, diffs, spec vs code traceability, and signs off PR."
+    provider: "siliconflow"              # Optional cloud model or ollama
+    model: "deepseek-ai/DeepSeek-V4-Pro-0813"            # e.g. claude-3-5-haiku or gpt-4o-mini
+    thinking: true
+    max_tokens: 4096
+    budget_usd: 0.50
+    search_enabled: false
+    allowed_content_classes:
+      - "goal"
+      - "spec"
+      - "architecture"
+      - "interface_stubs"
+      - "test_files"
+      - "gate_logs"
+      - "diffs"                        # Requires --cloud-sees-code if cloud provider used
+    allowed_tools: ["read_file", "list_dir"]
+    default_write_scope: [".swarm/runs/*/PR.md"]
+    command_allowlist: []
+    max_turns: 4
+    max_tool_calls: 8
+    token_budget: 15000
+    minutes_budget: 5.0

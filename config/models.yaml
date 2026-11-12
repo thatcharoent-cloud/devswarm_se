@@ -1,0 +1,70 @@
+# config/models.yaml
+# Hardware tiers: 16gb and 32gb unified memory
+# Candidates must be verified by `doctor`; never auto-pulled.
+tiers:
+  16gb:
+    default_num_ctx: 16384     # stretch to 24576 only if doctor shows no swap and 100% GPU
+    candidates:
+      - tag: "qwen2.5-coder:7b"
+        status: "primary"
+        size_gb: 4.7
+        description: "7B dense coder model, fast inference, robust tool-calling and code repair"
+        default_num_ctx: 16384
+      - tag: "qwen3.5:9b"
+        status: "alternate"
+        size_gb: 6.0
+        description: "~9B coder-capable model for 16 GB tier"
+        default_num_ctx: 16384
+      - tag: "qwen2.5-coder:14b"
+        status: "stretch"
+        size_gb: 9.0
+        description: "14B dense coder model; requires smaller context (12288) on 16 GB RAM"
+        default_num_ctx: 12288
+      - tag: "mistral-nemo:12b"
+        status: "alternate"
+        size_gb: 7.1
+        description: "12B general/code model"
+        default_num_ctx: 16384
+
+  32gb:
+    default_num_ctx: 32768
+    candidates:
+      - tag: "qwen2.5-coder:32b"
+        status: "primary"
+        size_gb: 19.0
+        description: "32B dense coder model (Q4_K_M), top-tier coding performance"
+        default_num_ctx: 32768
+      - tag: "gemma2:27b"
+        status: "alternate"
+        size_gb: 16.0
+        description: "27B dense model, strong reasoning"
+        default_num_ctx: 8192
+      - tag: "deepseek-coder-v2:16b"
+        status: "alternate"
+        size_gb: 8.9
+        description: "16B MoE (2.4B active params), specialized for code"
+        default_num_ctx: 32768
+      - tag: "qwen2.5:32b"
+        status: "alternate"
+        size_gb: 19.0
+        description: "32B dense general/coder model"
+        default_num_ctx: 32768
+
+defaults:
+  temperature: 0.2
+  num_predict: 2048       # hard cap per call, limits runaway KV growth
+  thinking: off           # slower and uses more context; allowed for orchestrator planning only
+  keep_alive: "-1"        # keep model loaded indefinitely between calls
+
+# Active tier (can be overridden in .env via SWARM_TIER or detected from sysctl hw.memsize)
+tier: "16gb"
+
+roles:
+  default_model: "qwen2.5-coder:7b"   # every role shares one loaded model by default
+  orchestrator: ""                     # empty means fallback to default_model
+  backend: ""
+  frontend: ""
+  tester: ""
+  security: ""
+  devops: ""
+  reviewer: ""                         # optional REVIEWER_MODEL override

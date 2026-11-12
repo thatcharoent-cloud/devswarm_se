@@ -1,0 +1,179 @@
+# config/policy.yaml
+# Security policy and isolation rules for the local & hybrid engineering swarm.
+
+# Paths that agents are strictly forbidden from reading or writing
+protected_paths:
+  - ".git"
+  - ".git/**"
+  - ".swarm"
+  - ".swarm/**"
+  - ".env"
+  - ".env.*"
+  - "*.pem"
+  - "*.key"
+  - "*id_rsa*"
+  - "config/models.yaml"
+  - "config/roles.yaml"
+  - "config/gates.yaml"
+  - "config/policy.yaml"
+  - "config/providers.yaml"
+
+# Paths that trigger human approval requirements when touched
+high_risk_paths:
+  - "*auth*"
+  - "*payment*"
+  - "*migration*"
+  - "*secret*"
+  - "*.github/workflows/*"
+  - "package-lock.json"
+  - "poetry.lock"
+  - "Pipfile.lock"
+  - "requirements.txt"
+
+# Default per-role command allowlists
+command_allowlists:
+  backend:
+    - "python"
+    - "python3"
+    - "pytest"
+    - "ruff"
+    - "black"
+    - "mypy"
+  frontend:
+    - "npm"
+    - "npx"
+    - "node"
+    - "yarn"
+    - "eslint"
+  tester:
+    - "pytest"
+    - "python"
+    - "python3"
+    - "npm test"
+  security:
+    - "bandit"
+    - "semgrep"
+    - "pip-audit"
+    - "npm audit"
+  devops:
+    - "docker"
+    - "make"
+
+# Hard limits
+max_files_per_task: 2
+tool_output_max_chars: 6000
+loop_detection_threshold: 3
+min_tokens_per_sec: 5.0
+throughput_collapse_consecutive_calls: 3
+unload_model_every_n_tasks: 3
+sandbox_memory: "1g"
+sandbox_cpus: "2"
+sandbox_pids: 256
+
+# ==============================================================================
+# Cloud Data Policy & Outbound Security Filter
+# Strict enforcement for all payloads sent to external cloud LLM providers
+# ==============================================================================
+cloud_data_policy:
+  max_payload_bytes: 65536     # Hard 64 KB limit per outbound cloud call
+
+  # Hard deny list: filenames and glob patterns NEVER permitted in any cloud payload
+  hard_deny_patterns:
+    - ".env*"
+    - "*.pem"
+    - "*.key"
+    - "*id_rsa*"
+    - "*credentials*"
+    - ".git/**"
+    - ".git*"
+    - ".swarm/**"
+    - ".swarm*"
+    - "config/providers.yaml"
+    - "config/policy.yaml"
+
+  # Allowed content classes per role
+  allowed_content_classes_per_role:
+    pm:
+      - "goal"
+      - "spec"
+      - "repo_map"
+      - "user_answers"
+    architect:
+      - "goal"
+      - "spec"
+      - "repo_map"
+      - "user_answers"
+      - "architecture"
+      - "interface_stubs"
+    qa:
+      - "goal"
+      - "spec"
+      - "architecture"
+      - "interface_stubs"
+      - "test_files"
+      - "gate_logs"
+    reviewer:
+      - "goal"
+      - "spec"
+      - "architecture"
+      - "interface_stubs"
+      - "test_files"
+      - "gate_logs"
+      - "diffs"                # Requires --cloud-sees-code if sent to cloud provider
+    backend:
+      - "*"                    # Local Ollama only
+    tester:
+      - "*"                    # Local Ollama only
+
+  # Regex patterns automatically redacted before any cloud call is dispatched
+  redaction_patterns:
+    - 'sk-[A-Za-z0-9_-]{20,}'                                              # OpenAI / Generic API keys
+    - 'sk-ant-[A-Za-z0-9_-]{20,}'                                          # Anthropic API keys
+    - 'AIza[0-9A-Za-z-_]{35}'                                              # Google / Gemini API keys
+    - 'Bearer\s+[A-Za-z0-9_\-\.]{20,}'                                     # Bearer tokens
+    - '-----BEGIN [A-Z ]+ PRIVATE KEY-----[\s\S]*?-----END [A-Z ]+ PRIVATE KEY-----'  # RSA/Private keys
+    - '(?i)(password|secret|api_key|apikey|access_token)\s*[:=]\s*["'']?([A-Za-z0-9_\-]{8,})'
+
+# ==============================================================================
+# Web Research & Safe Fetching Policy
+# Host-side research tools (web_search, fetch_page, search_docs)
+# ==============================================================================
+web_research_policy:
+  default_search_backend: "searxng"
+  searxng_base_url: "http://127.0.0.1:8080"
+  max_searches: 10
+  max_fetches: 15
+  max_fetch_bytes: 1000000
+  fetch_page_max_bytes: 262144    # 256 KB per page
+  fetch_timeout_s: 10.0
+  max_redirects: 5
+
+  # SSRF and Domain Security
+  domain_denylist:
+    - "localhost"
+    - "127.*"
+    - "169.254.*"
+    - "10.*"
+    - "192.168.*"
+    - "172.16.*"
+    - "172.17.*"
+    - "172.18.*"
+    - "172.19.*"
+    - "172.20.*"
+    - "172.21.*"
+    - "172.22.*"
+    - "172.23.*"
+    - "172.24.*"
+    - "172.25.*"
+    - "172.26.*"
+    - "172.27.*"
+    - "172.28.*"
+    - "172.29.*"
+    - "172.30.*"
+    - "172.31.*"
+    - "*.internal"
+    - "*.local"
+    - "*.onion"
+
+  domain_allowlist:
+    - "*"

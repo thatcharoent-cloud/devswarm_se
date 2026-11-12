@@ -1,0 +1,283 @@
+# config/providers.yaml
+# Provider registry and model catalog for the hybrid swarm.
+# API keys are read strictly from environment variables. Do NOT put raw keys here.
+
+providers:
+  ollama:
+    type: "ollama"
+    base_url: "http://127.0.0.1:11434"
+    api_key_env: "OLLAMA_API_KEY"
+    default_timeout_s: 180.0
+    max_retries: 3
+    rate_limit:
+      requests_per_minute: 120
+
+  openai:
+    type: "openai_compatible"
+    base_url: "https://api.openai.com/v1"
+    api_key_env: "OPENAI_API_KEY"
+    default_timeout_s: 60.0
+    max_retries: 3
+    rate_limit:
+      requests_per_minute: 60
+
+  anthropic:
+    type: "anthropic"
+    base_url: "https://api.anthropic.com/v1"
+    api_key_env: "ANTHROPIC_API_KEY"
+    default_timeout_s: 60.0
+    max_retries: 3
+    rate_limit:
+      requests_per_minute: 50
+
+  deepseek:
+    type: "openai_compatible"
+    base_url: "https://api.deepseek.com"
+    api_key_env: "DEEPSEEK_API_KEY"
+    default_timeout_s: 60.0
+    max_retries: 3
+    rate_limit:
+      requests_per_minute: 60
+
+  siliconflow:
+    type: "openai_compatible"
+    base_url: "https://api.siliconflow.com/v1"
+    api_key_env: "SILICONFLOW_API_KEY"
+    default_timeout_s: 300.0
+    max_retries: 3
+    rate_limit:
+      requests_per_minute: 60
+
+  gemini:
+    type: "openai_compatible"
+    base_url: "https://generativelanguage.googleapis.com/v1beta/openai/"
+    api_key_env: "GEMINI_API_KEY"
+    default_timeout_s: 60.0
+    max_retries: 3
+    rate_limit:
+      requests_per_minute: 60
+
+# Model catalog with capabilities and pricing ($ per 1M tokens)
+# Users replace placeholder model IDs (<set model id>) with their selected models.
+models:
+  # Anthropic models
+  "claude-3-7-sonnet":
+    provider: "anthropic"
+    context_window: 200000
+    capabilities:
+      tools: true
+      json_schema: true
+      thinking: true
+      web_search_native: false
+    pricing:
+      input_per_million: 3.00
+      output_per_million: 15.00
+
+  "claude-3-5-haiku":
+    provider: "anthropic"
+    context_window: 200000
+    capabilities:
+      tools: true
+      json_schema: true
+      thinking: false
+      web_search_native: false
+    pricing:
+      input_per_million: 0.80
+      output_per_million: 4.00
+
+  # OpenAI models
+  "gpt-4o":
+    provider: "openai"
+    context_window: 128000
+    capabilities:
+      tools: true
+      json_schema: true
+      thinking: false
+      web_search_native: false
+    pricing:
+      input_per_million: 2.50
+      output_per_million: 10.00
+
+  "gpt-4o-mini":
+    provider: "openai"
+    context_window: 128000
+    capabilities:
+      tools: true
+      json_schema: true
+      thinking: false
+      web_search_native: false
+    pricing:
+      input_per_million: 0.15
+      output_per_million: 0.60
+
+  # DeepSeek models
+  "deepseek-chat":
+    provider: "deepseek"
+    context_window: 64000
+    capabilities:
+      tools: true
+      json_schema: true
+      thinking: false
+      web_search_native: false
+    pricing:
+      input_per_million: 0.14
+      output_per_million: 0.28
+
+  "deepseek-reasoner":
+    provider: "deepseek"
+    context_window: 64000
+    capabilities:
+      tools: false
+      json_schema: false
+      thinking: true
+      web_search_native: false
+    pricing:
+      input_per_million: 0.55
+      output_per_million: 2.19
+
+  # SiliconFlow DeepSeek models
+  "deepseek-ai/DeepSeek-V3":
+    provider: "siliconflow"
+    context_window: 64000
+    capabilities:
+      tools: true
+      json_schema: true
+      thinking: false
+      web_search_native: false
+    pricing:
+      input_per_million: 0.14
+      output_per_million: 0.28
+
+  "deepseek-ai/DeepSeek-R1":
+    provider: "siliconflow"
+    context_window: 64000
+    capabilities:
+      tools: false
+      json_schema: false
+      thinking: true
+      web_search_native: false
+    pricing:
+      input_per_million: 0.55
+      output_per_million: 2.19
+
+  "deepseek-ai/DeepSeek-V4.1-Flash-1017":
+    provider: "siliconflow"
+    context_window: 1048576  # Upgraded to 1M+ token context length
+    capabilities:
+      tools: true
+      json_schema: true
+      thinking: true         # V4.1 Flash features adjustable reasoning/thinking
+      web_search_native: true # Built-in web search & fetch capabilities
+      multimodal: true       # Natively supports text + vision understanding
+    pricing:
+      input_per_million: 0.15
+      output_per_million: 0.60
+
+  "deepseek-ai/DeepSeek-V4-Pro-0813":
+    provider: "siliconflow"
+    context_window: 1048576  # 1M token context length supported natively
+    capabilities:
+      tools: true
+      json_schema: true
+      thinking: true         # Features adjustable reasoning (Low, High, Max effort)
+      web_search_native: true
+    pricing:
+      input_per_million: 1.32
+      output_per_million: 3.96
+
+  "Qwen/Qwen3-Coder-30B-A3B-Instruct":
+    provider: "siliconflow"
+    base_url: "https://siliconflow.com"
+    context_window: 262144   # 256K native context window on SiliconFlow (extendable to 1M via YaRN)
+    max_output_tokens: 262144
+    capabilities:
+      tools: true
+      json_schema: true
+      thinking: false        # Instruct variant runs in non-thinking mode only
+      web_search_native: false
+    pricing:
+      input_per_million: 0.07
+      output_per_million: 0.28
+
+  "moonshotai/Kimi-K3.1-Pro":
+    provider: "siliconflow"
+    base_url: "https://siliconflow.com"
+    context_window: 1048576
+    max_output_tokens: 262144
+    capabilities:
+      tools: true
+      json_schema: true
+      thinking: true
+      web_search_native: false
+      supports_temperature: false # Or omit temperature / lock to 1.0 depending on your client schema
+    parameters:
+      temperature: 1.0            # Required fixed value for all Kimi K3 models
+      top_p: 0.95                 # Required fixed value if top_p is sent
+    pricing:
+      input_per_million: 2.00
+      output_per_million: 10.00
+
+
+  # Gemini models (via OpenAI-compatible endpoint)
+  "gemini-2.5-pro":
+    provider: "gemini"
+    context_window: 1048576
+    capabilities:
+      tools: true
+      json_schema: true
+      thinking: true
+      web_search_native: false
+    pricing:
+      input_per_million: 1.25
+      output_per_million: 5.00
+
+  "gemini-2.5-flash":
+    provider: "gemini"
+    context_window: 1048576
+    capabilities:
+      tools: true
+      json_schema: true
+      thinking: false
+      web_search_native: false
+    pricing:
+      input_per_million: 0.10
+      output_per_million: 0.40
+
+  # Local Ollama models (Zero dollar cost)
+  "qwen2.5-coder:7b":
+    provider: "ollama"
+    context_window: 16384
+    capabilities:
+      tools: true
+      json_schema: true
+      thinking: false
+      web_search_native: false
+    pricing:
+      input_per_million: 0.0
+      output_per_million: 0.0
+
+  "qwen3.5:9b":
+    provider: "ollama"
+    context_window: 16384
+    capabilities:
+      tools: true
+      json_schema: true
+      thinking: false
+      web_search_native: false
+    pricing:
+      input_per_million: 0.0
+      output_per_million: 0.0
+
+  # Template placeholder for user configuration
+  "<set model id>":
+    provider: "openai"
+    context_window: 32768
+    capabilities:
+      tools: true
+      json_schema: true
+      thinking: false
+      web_search_native: false
+    pricing:
+      input_per_million: 2.00
+      output_per_million: 6.00
+
